@@ -2,8 +2,6 @@ import numpy as np
 import math
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel
-# from GPy.models import GPRegression
-# from GPy.kern import RBF
 from copy import deepcopy
 import logging
 
@@ -34,12 +32,6 @@ class MF_BaMLOGO:
 
     class GaussianProcess:
         def __init__(self, numFidelities, dim):
-            # self.kernel = RBF(input_dim=dim, ARD=True)
-            # self.models, self.isFit, self.data = [], [], []
-            # for _ in range(numFidelities):
-            #     self.models.append(None)
-            #     self.isFit.append(False)
-            #     self.data.append(dict())
             # Use an anisotropic kernel
             # (independent length scales for each dimension)
             sqrdExp = ConstantKernel() ** 2. * RBF(length_scale=dim*[1.])
@@ -59,9 +51,6 @@ class MF_BaMLOGO:
             if self.isValid(fidelity):
                 x = np.atleast_2d(list(self.data[fidelity].keys()))
                 y = np.array(list(self.data[fidelity].values())).reshape(-1, 1)
-                # self.models[fidelity] = GPRegression(x, y, self.kernel)
-                # self.models[fidelity].optimize()
-                # self.models[fidelity].optimize_restarts(num_restarts=10)
                 self.models[fidelity].fit(x, y)
                 self.isFit[fidelity] = True
 
@@ -72,10 +61,6 @@ class MF_BaMLOGO:
         def getPrediction(self, x, fidelity):
             if not self.isFit[fidelity]:
                 self.fitModel(fidelity)
-            # mean, var = self.models[fidelity].predict(x.reshape(1, -1))
-            # if var[0] < 0:
-            #     var[0] = 0
-            # return mean[0][0], math.sqrt(var[0])
             mean, std = self.models[fidelity].predict(x.reshape(1, -1),
                                                       return_std=True)
             return mean[0][0], std[0]
