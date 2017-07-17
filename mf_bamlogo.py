@@ -39,17 +39,18 @@ class MF_BaMLOGO:
             # for _ in range(numFidelities):
             #     self.models.append(None)
             #     self.isFit.append(False)
-            #     self.data.append({})
+            #     self.data.append(dict())
             # Use an anisotropic kernel
             # (independent length scales for each dimension)
-            sqrdExp = ConstantKernel() ** 2 * RBF(length_scale=dim*[1.])
+            sqrdExp = ConstantKernel() ** 2. * RBF(length_scale=dim*[1.])
+            numHyperParams = dim + 1
             self.models, self.isFit, self.data = [], [], []
             for _ in range(numFidelities):
                 self.models.append(GaussianProcessRegressor(
-                                            kernel=sqrdExp,
-                                            n_restarts_optimizer=dim*20))
+                                    kernel=sqrdExp,
+                                    n_restarts_optimizer=numHyperParams*10))
                 self.isFit.append(False)
-                self.data.append({})
+                self.data.append(dict())
 
         def isValid(self, fidelity):
             return len(self.data[fidelity]) >= 2
