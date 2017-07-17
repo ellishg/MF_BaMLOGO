@@ -120,6 +120,21 @@ def main(argv):
         lows = [.05, 100., 63070., 990., 63.1, 700., 1120., 9855.]
         highs = [.15, 50000., 115600., 1110., 116., 820., 1680., 12045.]
         trueOptima = 309.523221
+    elif testFunction == 'SCALE-38D':
+        from eval_scale import evalWeightsSCALE
+        def fn(x, f):
+            if f == 0:
+                return evalWeightsSCALE(x, 50)
+            elif f == 1:
+                return evalWeightsSCALE(x, 100)
+            elif f == 2:
+                return evalWeightsSCALE(x, 200)
+            else:
+                return float('nan')
+        costs = [.25, .5, 1.]
+        lows = 38 * [0.]
+        highs = 38 * [1.]
+        trueOptima = 1.
     else:
         print('Unknown test function.')
         exit(1)
