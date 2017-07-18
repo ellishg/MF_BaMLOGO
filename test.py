@@ -5,15 +5,17 @@ def main(argv):
                                ' -f <test_function>'
                                ' -a <algorithm>'
                                ' -r <resources>'
+                               ' -n <num_runs>'
                                ' -o <output>'
                                ' -v <verbose_level>')
     testFunction = 'Hartmann-3D'
     algorithm = 'MF-BaMLOGO'
     resources = 50
     outputDir = None
+    numRuns = 1
     import getopt
     try:
-        opts, args = getopt.getopt(argv[1:], 'hf:a:r:o:v:')
+        opts, args = getopt.getopt(argv[1:], 'hf:a:r:n:o:v:')
     except getopt.GetoptError:
         print(optionExample)
         exit(1)
@@ -35,6 +37,8 @@ def main(argv):
             algorithm = arg
         elif opt == '-r':
             resources = float(arg)
+        elif opt == '-n':
+            numRuns = int(arg)
         elif opt == '-o':
             outputDir = arg
 
@@ -140,7 +144,7 @@ def main(argv):
         exit(1)
 
     results = runAlgorithm(testFunction, fn, costs, lows, highs, trueOptima,
-                                resources, algorithm)
+                                resources, algorithm, numRuns)
 
     if outputDir:
         with open(outputDir, 'w') as outFile:
@@ -154,17 +158,23 @@ def main(argv):
 
 def runAlgorithm(functionName, fn,
                  costs, lows, highs,
-                 trueOptima, resources, algorithm):
+                 trueOptima, resources, algorithm, numRuns):
     from mf_bamlogo import MF_BaMLOGO, ObjectiveFunction
     objectiveFunction = ObjectiveFunction(fn, costs, lows, highs)
-    alg = MF_BaMLOGO(objectiveFunction, initNumber=10, algorithm=algorithm)
-    costs, values, queryPoints = alg.maximize(resources=resources,
-                                              ret_data=True)
-    results = {functionName: {algorithm: {'Costs': costs,
-                                          'Values': values,
-                                          'QueryPoints': queryPoints,
-                                          'TrueOptima': trueOptima,
-                                          'BestQuery': alg.bestQuery()}}}
+
+    runs = []
+    for _ in range(numRuns):
+        alg = MF_BaMLOGO(objectiveFunction, initNumber=10, algorithm=algorithm)
+        costs, values, queryPoints = alg.maximize(resources=resources,
+                                                  ret_data=True)
+        runs.append({'Costs': costs,
+                     'Values': values,
+                     'QueryPoints': queryPoints,
+                     'BestQuery': alg.bestQuery()
+                     })
+
+    results = {functionName: {algorithm: {'TrueOptima': trueOptima,
+                                          'Runs': runs}}}
     return results
 
 if __name__ == '__main__':

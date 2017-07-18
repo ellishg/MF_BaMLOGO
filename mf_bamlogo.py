@@ -8,13 +8,15 @@ import logging
 class ObjectiveFunction:
     def __init__(self, fn, costs, lows, highs):
         assert len(lows) == len(highs)
-
         self.dim = len(lows)
         self.maxFidelity = len(costs) - 1
         self.fn = fn
         self.costs = np.array(costs)
         self.lows = np.array(lows)
         self.highs = np.array(highs)
+        self.clear()
+
+    def clear(self):
         self.numObservations = np.zeros_like(self.costs)
 
     def evaluate(self, x, fidelity):
@@ -135,6 +137,7 @@ class MF_BaMLOGO:
         self.algorithm = algorithm
         self.wSchedule = [3, 4, 5, 6, 8, 30]
         self.objectiveFunction = objectiveFunction
+        self.objectiveFunction.clear()
         self.dim = objectiveFunction.dim
         self.maxFidelity = objectiveFunction.maxFidelity
         self.numFidelities = self.maxFidelity + 1

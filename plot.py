@@ -18,22 +18,50 @@ def main(dataDir='data/'):
     plot(results)
 
 '''
-{function: {algorithm: {'Costs': costs,
-                        'Values': values,
-                        'QueryPoints': queryPoints,
-                        'TrueOptima': trueOptima,
-                        'BestQuery': alg.bestQuery}}}
+runs.append({'Costs': costs,
+             'Values': values,
+             'QueryPoints': queryPoints,
+             'BestQuery': alg.bestQuery()
+             })
+
+{functionName: {algorithm: {'TrueOptima': trueOptima,
+                            'Runs': runs}}}
 '''
 def plot(results):
     import matplotlib.pyplot as plt
     import numpy as np
+    import math
     for i, (fn, fnResults) in enumerate(results.items()):
         plt.figure(i)
         for alg, algResults in fnResults.items():
-            costs = algResults['Costs']
             trueOptima = algResults['TrueOptima']
-            errors = trueOptima - np.array(algResults['Values'])
-            plt.plot(costs, errors, label=alg)
+            errorBins = dict()  # Find a list of the means of each run
+            for run in algResults['Runs']:
+                runErrorBins = dict()
+                costs = run['Costs']
+                errors = trueOptima - np.array(run['Values'])
+                for c, e in zip(costs, errors):
+                    _bin = math.floor(c / 10) * 10
+                    if _bin not in runErrorBins:
+                        runErrorBins[_bin] = [e]
+                    else:
+                        runErrorBins[_bin].append(e)
+                # Get the mean errors of the run
+                for _bin, es in runErrorBins.items():
+                    if _bin not in errorBins:
+                        errorBins[_bin] = [np.mean(es)]
+                    else:
+                        errorBins[_bin].append(np.mean(es))
+
+            costValues = list(errorBins.keys())
+            errorValues = list(errorBins.values())
+            means = np.array([np.mean(es) for es in errorValues])
+            stds = np.array([np.std(es) for es in errorValues])
+            plt.plot(costValues, means, label=alg)
+            plt.fill_between(costValues,
+                             means - stds,
+                             means + stds,
+                             color='#CCCCCC')
         plt.legend()
         plt.title(fn)
         plt.xlabel('Cumulative Cost')
