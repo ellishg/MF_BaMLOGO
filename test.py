@@ -4,13 +4,13 @@ def main(argv):
     optionExample = (argv[0] + ' -h'
                                ' -f <test_function>'
                                ' -a <algorithm>'
-                               ' -r <resources>'
+                               ' -r <budget>'
                                ' -n <num_runs>'
                                ' -o <output>'
                                ' -v <verbose_level>')
     testFunction = 'Hartmann-3D'
     algorithm = 'MF-BaMLOGO'
-    resources = 50
+    budget = 50
     outputDir = None
     numRuns = 1
     import getopt
@@ -36,7 +36,7 @@ def main(argv):
         elif opt == '-a':
             algorithm = arg
         elif opt == '-r':
-            resources = float(arg)
+            budget = float(arg)
         elif opt == '-n':
             numRuns = int(arg)
         elif opt == '-o':
@@ -144,7 +144,7 @@ def main(argv):
         exit(1)
 
     results = runAlgorithm(testFunction, fn, costs, lows, highs, trueOptima,
-                                resources, algorithm, numRuns)
+                                budget, algorithm, numRuns)
 
     if outputDir:
         with open(outputDir, 'w') as outFile:
@@ -158,14 +158,14 @@ def main(argv):
 
 def runAlgorithm(functionName, fn,
                  costs, lows, highs,
-                 trueOptima, resources, algorithm, numRuns):
+                 trueOptima, budget, algorithm, numRuns):
     from mf_bamlogo import MF_BaMLOGO, ObjectiveFunction
     objectiveFunction = ObjectiveFunction(fn, costs, lows, highs)
 
     runs = []
     for _ in range(numRuns):
         alg = MF_BaMLOGO(objectiveFunction, initNumber=10, algorithm=algorithm)
-        costs, values, queryPoints = alg.maximize(resources=resources,
+        costs, values, queryPoints = alg.maximize(budget=budget,
                                                   ret_data=True)
         runs.append({'Costs': costs,
                      'Values': values,

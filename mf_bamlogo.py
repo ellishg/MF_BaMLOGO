@@ -171,9 +171,9 @@ class MF_BaMLOGO:
         self.space = self.Space(self.dim)
         self.observeNode(self.space.nodes[0])
 
-    def maximize(self, resources=100, ret_data=False):
+    def maximize(self, budget=100, ret_data=False):
         costs, values, queryPoints = [], [], []
-        while self.objectiveFunction.totalCost() < resources:
+        while self.objectiveFunction.totalCost() < budget:
             self.stepBestValue = -float('inf')
             self.expandStep()
             self.adjustW()
