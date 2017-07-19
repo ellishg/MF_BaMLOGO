@@ -124,18 +124,18 @@ def main(argv):
         lows = [.05, 100., 63070., 990., 63.1, 700., 1120., 9855.]
         highs = [.15, 50000., 115600., 1110., 116., 820., 1680., 12045.]
         trueOptima = 309.523221
-    elif testFunction == 'SCALE-38D':
+    elif testFunction == 'SCALE-8D':
         from eval_scale import evalWeightsSCALE
         def fn(x, f):
             if f == 0:
-                return evalWeightsSCALE(x, 50)
+                return evalWeightsSCALE(x, 30)
             elif f == 1:
-                return evalWeightsSCALE(x, 100)
+                return evalWeightsSCALE(x, 150)
             elif f == 2:
-                return evalWeightsSCALE(x, 200)
+                return evalWeightsSCALE(x, 569)
             else:
                 return float('nan')
-        costs = [.25, .5, 1.]
+        costs = [0.1, 0.25, 1.0]
         lows = 38 * [0.]
         highs = 38 * [1.]
         trueOptima = 1.
