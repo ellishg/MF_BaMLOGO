@@ -31,6 +31,7 @@ def plot(results):
     import matplotlib.pyplot as plt
     import numpy as np
     import math
+    binSize = 5
     for i, (fn, fnResults) in enumerate(results.items()):
         plt.figure(i)
         for alg, algResults in fnResults.items():
@@ -41,7 +42,7 @@ def plot(results):
                 costs = run['Costs']
                 errors = trueOptima - np.array(run['Values'])
                 for c, e in zip(costs, errors):
-                    _bin = math.floor(c / 10) * 10
+                    _bin = math.floor(c / binSize) * binSize
                     if _bin not in runErrorBins:
                         runErrorBins[_bin] = [e]
                     else:
@@ -55,13 +56,21 @@ def plot(results):
 
             costValues = list(errorBins.keys())
             errorValues = list(errorBins.values())
+            perm = np.argsort(costValues)
+            costValues = np.array(costValues)[perm]
+            errorValues = np.array(errorValues)[perm]
             means = np.array([np.mean(es) for es in errorValues])
-            stds = np.array([np.std(es) for es in errorValues])
+            lows = np.array([np.min(es) for es in errorValues])
+            highs = np.array([np.max(es) for es in errorValues])
             plt.plot(costValues, means, label=alg)
+            if alg == 'MF-BaMLOGO':
+                color = '#AAAAAA'
+            else:
+                color = '#DDDDDD'
             plt.fill_between(costValues,
-                             means - stds,
-                             means + stds,
-                             color='#CCCCCC')
+                             lows,
+                             highs,
+                             color=color)
         plt.legend()
         plt.title(fn)
         plt.xlabel('Cumulative Cost')
