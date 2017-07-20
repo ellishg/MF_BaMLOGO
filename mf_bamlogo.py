@@ -274,6 +274,7 @@ class MF_BaMLOGO:
             mean, _ = self.gp.getPrediction(x, fidelity - 1)
             if mean is None or abs(y - mean) > self.epsilon:
                 lowFidelityY = self.objectiveFunction.evaluate(x, fidelity - 1)
+                # TODO: Try updating the GP here
                 self.epsilon = max(self.epsilon, abs(y - lowFidelityY))
                 logging.debug('Epsilon is now {0}'.format(self.epsilon))
 

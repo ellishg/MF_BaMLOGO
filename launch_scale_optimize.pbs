@@ -1,10 +1,10 @@
 #!/bin/bash
 
 #PBS -N SCALE_MF_BaMLOGO
-#PBS -l nodes=1:ppn=4,mem=40gb,walltime=20:00:00
+#PBS -l nodes=1:ppn=4,mem=35gb,walltime=24:00:00
 
-#PBS -e /home/ehoag/summer17/MF_BaMLOGO/scale_error.txt
-#PBS -o /home/ehoag/summer17/MF_BaMLOGO/scale_out.txt
+#PBS -e /home/ehoag/summer17/MF_BaMLOGO/scale_mf_bamlogo_error.txt
+#PBS -o /home/ehoag/summer17/MF_BaMLOGO/scale_mf_bamlogo_out.txt
 #PBS -M eshoag2@illinois.edu
 
 #PBS -q doppa
@@ -19,11 +19,11 @@ cd /data/doppa/users/ehoag/MF_BaMLOGO/executables
 
 # ALG='LOGO'
 # ALG='BaMLOGO'
-ALG='MF_BaMLOGO'
+ALG='MF-BaMLOGO'
 
-# WARNING: Do not attept to run concurent optimizations of SCALE
-FN='SCALE-38D'
+# WARNING: Do not attept to run concurent instances of SCALE
+FN='SCALE-8D'
 
 OUT_PATH="/data/doppa/users/ehoag/MF_BaMLOGO/data/${ALG}_${FN}.json"
 
-python test.py -f $FN -a $ALG -r 100 -o $OUT_PATH -v 2
+python test.py -f $FN -a $ALG -r 40 -n 1 -o $OUT_PATH -v 2

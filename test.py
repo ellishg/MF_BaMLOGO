@@ -1,4 +1,5 @@
 import sys
+import numpy as np
 
 def main(argv):
     optionExample = (argv[0] + ' -h'
@@ -125,19 +126,22 @@ def main(argv):
         highs = [.15, 50000., 115600., 1110., 116., 820., 1680., 12045.]
         trueOptima = 309.523221
     elif testFunction == 'SCALE-8D':
+        true_dim = 38
+        dim = 8
         from eval_scale import evalWeightsSCALE
         def fn(x, f):
+            u = np.append(x, (true_dim - dim) * [0.5])
             if f == 0:
-                return evalWeightsSCALE(x, 30)
+                return 1. - evalWeightsSCALE(u, 30)
             elif f == 1:
-                return evalWeightsSCALE(x, 150)
+                return 1. - evalWeightsSCALE(u, 150)
             elif f == 2:
-                return evalWeightsSCALE(x, 569)
+                return 1. - evalWeightsSCALE(u, 569)
             else:
                 return float('nan')
         costs = [0.1, 0.25, 1.0]
-        lows = 38 * [0.]
-        highs = 38 * [1.]
+        lows = dim * [0.]
+        highs = dim * [1.]
         trueOptima = 1.
     else:
         print('Unknown test function.')

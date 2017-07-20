@@ -35,6 +35,7 @@ CMD = ['java',
 To execute SCALE (Yago):
     ~30GB of memory
     2-4 cpus
+    ~3 minutes for querySize=30 (walltime=~3)
     ~8 minutes for querySize=50 (walltime=~4)
     ~11 minutes for querySize=100 (walltime=~6)
     ~19 minutes for querySize=200 (walltime=~10)
