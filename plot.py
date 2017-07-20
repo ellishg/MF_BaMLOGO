@@ -35,12 +35,16 @@ def plot(results):
     for i, (fn, fnResults) in enumerate(results.items()):
         plt.figure(i)
         for alg, algResults in fnResults.items():
-            trueOptima = algResults['TrueOptima']
+            if 'TrueOptima' in algResults:
+                trueOptima = algResults['TrueOptima']
             errorBins = dict()  # Find a list of the means of each run
             for run in algResults['Runs']:
                 runErrorBins = dict()
                 costs = run['Costs']
-                errors = trueOptima - np.array(run['Values'])
+                if 'Errors' in run:
+                    errors = np.array(run['Errors'])
+                elif 'Values' in run:
+                    errors = trueOptima - np.array(run['Values'])
                 for c, e in zip(costs, errors):
                     _bin = math.floor(c / binSize) * binSize
                     if _bin not in runErrorBins:
@@ -64,13 +68,10 @@ def plot(results):
             highs = np.array([np.max(es) for es in errorValues])
             plt.plot(costValues, means, label=alg)
             if alg == 'MF-BaMLOGO':
-                color = '#AAAAAA'
-            else:
-                color = '#DDDDDD'
-            plt.fill_between(costValues,
-                             lows,
-                             highs,
-                             color=color)
+                plt.fill_between(costValues,
+                                 lows,
+                                 highs,
+                                 color='#AAAAAA')
         plt.legend()
         plt.title(fn)
         plt.xlabel('Cumulative Cost')
