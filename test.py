@@ -44,84 +44,59 @@ def main(argv):
             outputDir = arg
 
     if testFunction == 'Hartmann-3D':
-        from mf_test_functions import getMFHartmann
-        numFidelities = 3
-        fn = getMFHartmann(numFidelities, 3)
-        costs = [10. ** -(numFidelities - f - 1) for f in range(numFidelities)]
+        from mf_test_functions import mfHartmann3
+        def fn(x, f):
+            value, cost = mfHartmann3(x, f)
+            return -value, cost
+        costEstimations = [0.01, 0.1, 1.]
         lows = 3 * [0.]
         highs = 3 * [1.]
         trueOptima = 3.86278
     elif testFunction == 'Hartmann-6D':
-        from mf_test_functions import getMFHartmann
-        numFidelities = 4
-        fn = getMFHartmann(numFidelities, 6)
-        costs = [10. ** -(numFidelities - f - 1) for f in range(numFidelities)]
+        from mf_test_functions import mfHartmann6
+        def fn(x, f):
+            value, cost = mfHartmann6(x, f)
+            return -value, cost
+        costEstimations = [0.001, 0.01, 0.1, 1.]
         lows = 6 * [0.]
         highs = 6 * [1.]
         trueOptima = 3.32237
     elif testFunction == 'Park1-4D':
-        from mf_test_functions import park1, lowFidelityPark1
+        from mf_test_functions import mfPark1
         def fn(x, f):
-            if f == 0:
-                return lowFidelityPark1(x)
-            elif f == 1:
-                return park1(x)
-            else:
-                return float('nan')
-        costs = [0.1, 1.]
+            value, cost = mfPark1(x, f)
+            return -value, cost
+        costEstimations = [0.1, 1.]
         lows = 4 * [0.]
         highs = 4 * [1.]
         trueOptima = 25.5893
     elif testFunction == 'Park2-4D':
-        from mf_test_functions import park2, lowFidelityPark2
+        from mf_test_functions import mfPark2
         def fn(x, f):
-            if f == 0:
-                return lowFidelityPark2(x)
-            elif f == 1:
-                return park2(x)
-            else:
-                return float('nan')
-        costs = [0.1, 1.]
+            value, cost = mfPark2(x, f)
+            return -value, cost
+        costEstimations = [0.1, 1.]
         lows = 4 * [0.]
         highs = 4 * [1.]
         trueOptima = 5.92604
     elif testFunction == 'CurrinExponential-2D':
-        from mf_test_functions import (currinExponential,
-                                       lowFideliltyCurrinExponential)
-        def fn(x, f):
-            if f == 0:
-                return lowFideliltyCurrinExponential(x)
-            elif f == 1:
-                return currinExponential(x)
-            else:
-                return float('nan')
-        costs = [0.1, 1.]
+        from mf_test_functions import mfCurrinExp
+        fn = mfCurrinExp
+        costEstimations = [0.1, 1.]
         lows = [0., 0.]
         highs = [1., 1.]
         trueOptima = 13.7987
     elif testFunction == 'BadCurrinExponential-2D':
-        from mf_test_functions import currinExponential
-        def fn(x, f):
-            if f == 0:
-                return -currinExponential(x)
-            elif f == 1:
-                return currinExponential(x)
-            else:
-                return float('nan')
-        costs = [0.1, 1.]
+        from mf_test_functions import mfBadCurrinExp
+        fn = mfBadCurrinExp
+        costEstimations = [0.1, 1.]
         lows = [0., 0.]
         highs = [1., 1.]
         trueOptima = 13.7987
     elif testFunction == 'Borehole-8D':
-        from mf_test_functions import borehole, lowFidelityBorehole
-        def fn(x, f):
-            if f == 0:
-                return lowFidelityBorehole(x)
-            elif f == 1:
-                return borehole(x)
-            else:
-                return float('nan')
-        costs = [0.1, 1.]
+        from mf_test_functions import mfBorehole
+        fn = mfBorehole
+        costEstimations = [0.1, 1.]
         lows = [.05, 100., 63070., 990., 63.1, 700., 1120., 9855.]
         highs = [.15, 50000., 115600., 1110., 116., 820., 1680., 12045.]
         trueOptima = 309.523221
@@ -132,43 +107,60 @@ def main(argv):
         def fn(x, f):
             u = np.append(x, (true_dim - dim) * [0.5])
             if f == 0:
-                return 1. - evalWeightsSCALE(u, 30)
+                value, cost = evalWeightsSCALE(u, 30)
             elif f == 1:
-                return 1. - evalWeightsSCALE(u, 150)
+                value, cost = evalWeightsSCALE(u, 150)
             elif f == 2:
-                return 1. - evalWeightsSCALE(u, 569)
-            else:
-                return float('nan')
-        costs = [0.1, 0.25, 1.0]
+                value, cost = evalWeightsSCALE(u, 569)
+            return 1 - value, cost
+        costEstimations = [0.1, 0.25, 1.0]
         lows = dim * [0.]
         highs = dim * [1.]
         trueOptima = 1.
+    elif testFunction == 'Rosenbrock-2D':
+        from mf_test_functions import mfRosenbrock
+        def fn(x, f):
+            value, cost = mfRosenbrock(x, f)
+            return -value, cost
+        costEstimations = [0.01, 0.1, 1.]
+        lows = [-2., -2.]
+        highs = [2., 2.]
+        trueOptima = 0.
+    elif testFunction == 'Hosaki-2D':
+        from mf_test_functions import mfHosaki
+        def fn(x, f):
+            value, cost = mfHosaki(x, f)
+            return -value, cost
+        costEstimations = [0.01, 0.1, 1.]
+        lows = [0., 0.]
+        highs = [10., 10.]
+        trueOptima = 2.345811576101292
     else:
         print('Unknown test function.')
         exit(1)
 
-    results = runAlgorithm(testFunction, fn, costs, lows, highs, trueOptima,
-                                budget, algorithm, numRuns)
+    results = runAlgorithm(testFunction, fn, costEstimations, lows, highs,
+                           trueOptima, budget, algorithm, numRuns)
 
     if outputDir:
         with open(outputDir, 'w') as outFile:
             import json
             json.dump(results, outFile)
     else:
-        best = results[testFunction][algorithm]['BestQuery']
+        best = results[testFunction][algorithm]['Runs'][0]['BestQuery']
         print('Found f{0} = {1}'.format(*best))
         from plot import plot
         plot(results)
 
 def runAlgorithm(functionName, fn,
-                 costs, lows, highs,
+                 costEstimations, lows, highs,
                  trueOptima, budget, algorithm, numRuns):
-    from mf_bamlogo import MF_BaMLOGO, ObjectiveFunction
-    objectiveFunction = ObjectiveFunction(fn, costs, lows, highs)
+    from mf_bamlogo import MF_BaMLOGO
 
     runs = []
     for _ in range(numRuns):
-        alg = MF_BaMLOGO(objectiveFunction, initNumber=10, algorithm=algorithm)
+        alg = MF_BaMLOGO(fn, costEstimations, lows, highs,
+                         initNumber=10, algorithm=algorithm)
         costs, values, queryPoints = alg.maximize(budget=budget,
                                                   ret_data=True)
         runs.append({'Costs': costs,

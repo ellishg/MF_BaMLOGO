@@ -40,9 +40,9 @@ def plot(results):
             errorBins = dict()  # Find a list of the means of each run
             for run in algResults['Runs']:
                 runErrorBins = dict()
-                costs = run['Costs']
+                costs = np.array(run['Costs']).flatten()
                 if 'Errors' in run:
-                    errors = np.array(run['Errors'])
+                    errors = np.array(run['Errors']).flatten()
                 elif 'Values' in run:
                     errors = trueOptima - np.array(run['Values'])
                 for c, e in zip(costs, errors):
@@ -67,7 +67,7 @@ def plot(results):
             lows = np.array([np.min(es) for es in errorValues])
             highs = np.array([np.max(es) for es in errorValues])
             plt.plot(costValues, means, label=alg)
-            if alg == 'MF-BaMLOGO':
+            if True: #alg == 'MF-BaMLOGO':
                 plt.fill_between(costValues,
                                  lows,
                                  highs,

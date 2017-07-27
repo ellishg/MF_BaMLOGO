@@ -1,5 +1,6 @@
 import subprocess
 import re
+import time
 
 policyScorePattern = re.compile("(?<=test policy score = )[0-9.e-]+")
 
@@ -43,6 +44,8 @@ To execute SCALE (Yago):
 '''
 def evalWeightsSCALE(weights, testQuerySize):
 
+    startTime = time.time()
+
     # Write weights to WORKING_MODEL_DATA
     with open(MODEL_DATA, 'r') as modelFile:
         data = ''
@@ -81,18 +84,18 @@ def evalWeightsSCALE(weights, testQuerySize):
         print('Weights={0}, Test query size={1}'.format(weights, testQuerySize))
         error = result.stderr.decode('utf-8')
         print(error)
-        return float('nan')
+        return float('nan'), startTime - time.time()
     output = result.stdout.decode('utf-8')
 
     # Read results from stdout
     score = policyScorePattern.search(output)
     if score:
-        return float(score[0])
+        return float(score[0]), startTime - time.time()
     else:
         print('Could not find policy score!')
         print(output)
         print('Weights={0}, Test query size={1}'.format(weights, testQuerySize))
-        return float('nan')
+        return float('nan'), startTime - time.time()
 
 def makeRandomEmbedding(fn, fn_bounds, fn_dim, result_dim):
     A = np.random.rand(fn_dim, result_dim)
@@ -110,5 +113,6 @@ if __name__ == '__main__':
                0.0, 0.1, 0.1, 0.1, 0.1,
                0.1, 0.1, 0.1)
     testQuerySize = 569
-    y = evalWeightsSCALE(weights, testQuerySize)
-    print('y = {0} with test query size = {1}'.format(y, testQuerySize))
+    y, cost = evalWeightsSCALE(weights, testQuerySize)
+    print('y = {0} with with cost = {1} and test query size = {2}'
+            .format(y, cost, testQuerySize))

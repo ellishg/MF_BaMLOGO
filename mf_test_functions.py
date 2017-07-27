@@ -1,18 +1,77 @@
 import numpy as np
 import math
 
-def getMFHartmann(numFidelities, dim):
+def mfRosenbrock(x, f):
+    numFidelities = 3
+    assert(0 <= f and f < numFidelities)
+
+    def rosenbrock(x):
+        '''
+        Rosenbrock Function
+        (Continuous, Differentiable, Non-Separable, Non-Scalable, Unimodal)
+        -2 <= xi <= 2
+        The global minima is located at x∗ = f(1,··· ,1), f(x∗) = 0.
+        '''
+        return np.sum(100. * (x[1:] - x[:-1] ** 2.) ** 2. + (x[:-1] - 1) ** 2.)
+
+    def error(x, f):
+        offsets = [3.5, 1.1, 0.]
+        epsilon = 250.
+        resolution = 1.5
+        x1, x2 = x
+        r = (math.sin(resolution * x1 + offsets[f])
+           * math.cos(resolution * x2 + math.sin(offsets[f])) ** 2.)
+        return epsilon * (numFidelities - 1 - f) * r
+
+    cost = 10. ** (f - numFidelities + 1)
+    x = np.array(x)
+    return rosenbrock(x) + error(x, f), cost
+
+def mfHosaki(x, f):
+    numFidelities = 3
+    assert(0 <= f and f < numFidelities)
+
+    def hosaki(x):
+        '''
+        Hosaki Function
+        (Continuous, Differentiable, Non-Separable, Non-Scalable, Multimodal)
+        x ∈ [0, 10]^2
+        The global minimum is located at x∗ = f(4,2), f(x∗) ≈ −2.345811576101292
+        '''
+        x1, x2 = x
+        p = 1. - 8. * x1 + 7. * x1 ** 2. - 7./3. * x1 ** 3. + .25 * x1 ** 4.
+        return p * x2 ** 2. * math.exp(-x2)
+
+    def error(x, f):
+        offsets = [4.1, 3.2, 0.]
+        epsilon = 0.5 * (numFidelities - 1 - f)
+        resolution = 1.
+        x1, x2 = x
+        r = (math.sin(resolution * x1 + offsets[f])
+           * math.cos(resolution * x2 + math.sin(offsets[f])) ** 2.)
+        return epsilon * r
+
+    cost = 10. ** (f - numFidelities + 1)
+    x = np.array(x)
+    return hosaki(x) + error(x, f), cost
+
+def mfHartmann3(x, f):
+    numFidelities = 3
+    assert 0 <= f and f < numFidelities
     alpha = np.array([1., 1.2, 3., 3.2])
     delta = np.array([0.01, -0.01, -0.1, 0.1])
-    if dim == 3:
-        fn = hartmann3
-    if dim == 6:
-        fn = hartmann6
-        delta *= 0.1
-    return lambda x, f: -fn(x, alpha + delta * (numFidelities - f - 1))
+    cost = 10. ** (f - numFidelities + 1)
+    return hartmann3(x, alpha + delta * (numFidelities - f - 1)), cost
+
+def mfHartmann6(x, f):
+    numFidelities = 4
+    assert 0 <= f and f < numFidelities
+    alpha = np.array([1., 1.2, 3., 3.2])
+    delta = np.array([0.001, -0.001, -0.01, 0.01])
+    cost = 10. ** (f - numFidelities + 1)
+    return hartmann6(x, alpha + delta * (numFidelities - f - 1)), cost
 
 def hartmann(x, A, P, alpha):
-
     result = 0.
     for i in range(4):
         tmp = 0.
@@ -61,6 +120,12 @@ def hartmann6(x, alpha):
 
     return hartmann(x, A, P, alpha)
 
+def mfPark1(x, f):
+    if f == 1:
+        return park1(x), 1.
+    elif f == 0:
+        return lowFidelityPark1(x), 0.1
+
 '''
 https://www.sfu.ca/~ssurjano/park91a.html
 According to Mathematica:
@@ -79,6 +144,12 @@ def lowFidelityPark1(x):
     p = -2.*x1 + x2**2. + x3**2. + 0.5
     return (1. + math.sin(x1)/10.) * park1(x) + p
 
+def mfPark2(x, f):
+    if f == 1:
+        return park2(x), 1.
+    elif f == 0:
+        return lowFidelityPark2(x), 0.1
+
 '''
 https://www.sfu.ca/~ssurjano/park91b.html
 According to Mathematica:
@@ -91,6 +162,18 @@ def park2(x):
 
 def lowFidelityPark2(x):
     return 1.2 * park2(x) - 1.
+
+def mfCurrinExp(x, f):
+    if f == 1:
+        return currinExponential(x), 1.
+    elif f == 0:
+        return lowFideliltyCurrinExponential(x), 0.1
+
+def mfBadCurrinExp(x, f):
+    if f == 1:
+        return currinExponential(x), 1.
+    elif f == 0:
+        return -currinExponential(x), 0.1
 
 '''
 https://www.sfu.ca/~ssurjano/curretal88exp.html
@@ -118,6 +201,12 @@ def lowFideliltyCurrinExponential(args):
 
     return .25 * (currinExponential(a) + currinExponential(b)
                 + currinExponential(c) + currinExponential(d))
+
+def mfBorehole(x, f):
+    if f == 1:
+        return borehole(x), 1.
+    elif f == 0:
+        return lowFidelityBorehole(x), 0.1
 
 '''
 https://www.sfu.ca/~ssurjano/borehole.html

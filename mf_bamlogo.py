@@ -5,31 +5,6 @@ from sklearn.gaussian_process.kernels import RBF, ConstantKernel
 from copy import deepcopy
 import logging
 
-class ObjectiveFunction:
-    def __init__(self, fn, costs, lows, highs):
-        assert len(lows) == len(highs)
-        self.dim = len(lows)
-        self.maxFidelity = len(costs) - 1
-        self.fn = fn
-        self.costs = np.array(costs)
-        self.lows = np.array(lows)
-        self.highs = np.array(highs)
-        self.clear()
-
-    def clear(self):
-        self.numObservations = np.zeros_like(self.costs)
-
-    def evaluate(self, x, fidelity):
-        self.numObservations[fidelity] = self.numObservations[fidelity] + 1
-        args = tuple(x * (self.highs - self.lows) + self.lows)
-        y = self.fn(args, fidelity)
-        logging.debug('Evaluating function at fidelity {0}: f{1} = {2}'
-                            .format(fidelity, args, y))
-        return y
-
-    def totalCost(self):
-        return np.sum(self.numObservations * self.costs)
-
 class MF_BaMLOGO:
 
     class GaussianProcess:
@@ -131,16 +106,20 @@ class MF_BaMLOGO:
             newNodes = node.split()
             self.nodes.extend(newNodes)
 
-    def __init__(self, objectiveFunction,
+    def __init__(self, fn, costEstimations, lows, highs,
                         initNumber=10, algorithm='MF-BaMLOGO'):
         assert algorithm in ['MF-BaMLOGO', 'BaMLOGO', 'LOGO']
+        assert len(lows) == len(highs)
         self.algorithm = algorithm
         self.wSchedule = [3, 4, 5, 6, 8, 30]
-        self.objectiveFunction = objectiveFunction
-        self.objectiveFunction.clear()
-        self.dim = objectiveFunction.dim
-        self.maxFidelity = objectiveFunction.maxFidelity
-        self.numFidelities = self.maxFidelity + 1
+        self.fn = fn
+        self.lows = np.array(lows)
+        self.highs = np.array(highs)
+        self.dim = len(self.lows)
+        self.costs = costEstimations
+        self.totalCost = 0.
+        self.numFidelities = len(self.costs)
+        self.maxFidelity = self.numFidelities - 1
         self.numExpansions = 0
         self.wIndex = 0
         self.stepBestValue = -float('inf')
@@ -153,11 +132,11 @@ class MF_BaMLOGO:
             samples = []
             for i in range(initNumber):
                 x = np.random.uniform([0.] * self.dim, [1.] * self.dim)
-                y = self.objectiveFunction.evaluate(x, fidelity=0)
+                y = self.evaluate(x, 0)
                 samples.append(y)
-                self.gp.addSample(x, y, fidelity=0)
+                self.gp.addSample(x, y, 0)
                 if i % 3 == 0:
-                    y1 = self.objectiveFunction.evaluate(x, fidelity=1)
+                    y1 = self.evaluate(x, 1)
                     self.epsilon = max(self.epsilon, abs(y - y1))
                     samples.append(y1)
                     self.gp.addSample(x, y1, fidelity=1)
@@ -171,24 +150,24 @@ class MF_BaMLOGO:
         self.space = self.Space(self.dim)
         self.observeNode(self.space.nodes[0])
 
-    def maximize(self, budget=100, ret_data=False):
-        costs, values, queryPoints = [], [], []
-        while self.objectiveFunction.totalCost() < budget:
+    def maximize(self, budget=100., ret_data=False):
+        costs, bestValues, queryPoints = [], [], []
+        while self.totalCost < budget:
             self.stepBestValue = -float('inf')
             self.expandStep()
             self.adjustW()
 
             if self.bestNode:
-                cost = self.objectiveFunction.totalCost()
+                cost = self.totalCost
                 x = tuple(self.bestNode.center)
                 y = self.bestNode.value
                 costs.append(cost)
                 queryPoints.append(x)
-                values.append(y)
+                bestValues.append(y)
                 logging.info('Best value is {0} with cost {1}'.format(y, cost))
 
         if ret_data:
-            return costs, values, queryPoints
+            return costs, bestValues, queryPoints
 
     def maxLevel(self):
         depthWidth = self.wSchedule[self.wIndex]
@@ -244,7 +223,7 @@ class MF_BaMLOGO:
                 logging.debug('Already had node at x={0}'.format(tuple(x)))
                 return
 
-        y = self.objectiveFunction.evaluate(x, fidelity)
+        y = self.evaluate(x, fidelity)
         node.setFidelity(y + offset, fidelity)
 
         self.stepBestValue = max(self.stepBestValue, y)
@@ -262,8 +241,8 @@ class MF_BaMLOGO:
             self.timeSinceEval[fidelity+1:] =\
                             self.timeSinceEval[fidelity+1:] + 1
             for f in range(len(self.thresholds)):
-                c = (self.objectiveFunction.costs[f+1]
-                        / self.objectiveFunction.costs[f])
+                c = (self.costs[f+1]
+                        / self.costs[f])
                 if self.timeSinceEval[f+1] > c:
                     self.thresholds[f] = self.thresholds[f] * 2
                     logging.debug('Thresholds are now {0}'
@@ -273,10 +252,19 @@ class MF_BaMLOGO:
         if self.algorithm == 'MF-BaMLOGO' and fidelity > 0:
             mean, _ = self.gp.getPrediction(x, fidelity - 1)
             if mean is None or abs(y - mean) > self.epsilon:
-                lowFidelityY = self.objectiveFunction.evaluate(x, fidelity - 1)
+                lowFidelityY = self.evaluate(x, fidelity - 1)
                 # TODO: Try updating the GP here
                 self.epsilon = max(self.epsilon, abs(y - lowFidelityY))
                 logging.debug('Epsilon is now {0}'.format(self.epsilon))
+
+
+    def evaluate(self, x, f):
+        args = tuple(x * (self.highs - self.lows) + self.lows)
+        logging.debug('Evaluating f{0} at fidelity {1}'.format(args, f))
+        y, cost = self.fn(args, f)
+        logging.debug('Got y = {0} with cost {1}'.format(y, cost))
+        self.totalCost += cost
+        return y
 
     def chooseFidelity(self, node):
         if self.algorithm == 'MF-BaMLOGO':
