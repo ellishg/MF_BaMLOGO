@@ -10,7 +10,7 @@ def mfRosenbrock(x, f):
         Rosenbrock Function
         (Continuous, Differentiable, Non-Separable, Non-Scalable, Unimodal)
         -2 <= xi <= 2
-        The global minima is located at x∗ = f(1,··· ,1), f(x∗) = 0.
+        The global minima is located at x = f(1, ..., 1), f(x) = 0.
         '''
         return np.sum(100. * (x[1:] - x[:-1] ** 2.) ** 2. + (x[:-1] - 1) ** 2.)
 
@@ -35,8 +35,8 @@ def mfHosaki(x, f):
         '''
         Hosaki Function
         (Continuous, Differentiable, Non-Separable, Non-Scalable, Multimodal)
-        x ∈ [0, 10]^2
-        The global minimum is located at x∗ = f(4,2), f(x∗) ≈ −2.345811576101292
+        Domain: [0, 10]^2
+        The global minimum is located at x = f(4, 2), f(x) = -2.345811576101292
         '''
         x1, x2 = x
         p = 1. - 8. * x1 + 7. * x1 ** 2. - 7./3. * x1 ** 3. + .25 * x1 ** 4.
