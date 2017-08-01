@@ -107,13 +107,13 @@ class MFBaMLOGO:
                                 updateGP=True, adjustThresholds=True)
 
         elif self.algorithm == 'MF-BaMLOGO' and 2. * self.error(0) < ucb - lcb:
-            logging.debug('Unfavorable region at x={0}; '
-                      'Using lowest fidelity'.format(self.transformToDomain(x)))
+            logging.debug('Unfavorable region at x={0}; Using lowest fidelity'
+                            .format(self.transformToDomain(x)))
             self.evaluateNode(node, fidelity=0, offset=-self.error(0))
 
         else:
-            logging.debug('Unfavorable region at x={0}. '
-                      'Using LCB = {1}'.format(self.transformToDomain(x), lcb))
+            logging.debug('Unfavorable region at x={0}. Using LCB = {1}'
+                            .format(self.transformToDomain(x), lcb))
             node.setFakeValue(lcb)
 
     def evaluateNode(self, node, fidelity,
@@ -231,8 +231,7 @@ class MFBaMLOGO:
         else:
             self.wIndex = max(self.wIndex - 1, 0)
         self.lastBestValue = self.stepBestValue
-        logging.debug('Width is now {0}'.format(
-                            self.wSchedule[self.wIndex]))
+        logging.debug('Width is now {0}'.format(self.wSchedule[self.wIndex]))
 
     def transformToDomain(self, x):
         return tuple(x * (self.highs - self.lows) + self.lows)
