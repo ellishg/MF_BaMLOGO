@@ -19,7 +19,7 @@ class GaussianProcess:
             self.yValues.append([])
 
     def isValid(self, fidelity):
-        return len(self.xValues[fidelity]) >= 4
+        return len(self.xValues[fidelity]) >= 2
 
     def fitModel(self, fidelity):
         if self.isValid(fidelity) and not self.isFit[fidelity]:
@@ -29,8 +29,8 @@ class GaussianProcess:
             self.isFit[fidelity] = True
 
     def addSample(self, x, y, fidelity):
-        self.xValues[fidelity] = x
-        self.yValues[fidelity] = y
+        self.xValues[fidelity].append(x)
+        self.yValues[fidelity].append(y)
         self.isFit[fidelity] = False
 
     def getPrediction(self, x, fidelity):

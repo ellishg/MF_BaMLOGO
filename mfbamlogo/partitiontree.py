@@ -48,7 +48,7 @@ class Node:
     def split(self):
         lengths = self.highs - self.lows
         longestDimension = np.argmax(lengths)
-        logging.debug('Splitting node at x={0} along axis {1}'
+        logging.debug('Splitting node {0} along axis {1}'
                         .format(tuple(self.center), longestDimension))
         t = lengths[longestDimension] / 3.
         lowerThird = self.lows[longestDimension] + t

@@ -135,6 +135,13 @@ def main(argv):
         lows = [0., 0.]
         highs = [10., 10.]
         trueOptima = 2.345811576101292
+    elif testFunction == 'Univariate-1D':
+        from mf_test_functions import mfUnivariate
+        fn = mfUnivariate
+        costEstimations = [0.1, 1.]
+        lows = [0.]
+        highs = [1.2]
+        trueOptima = 1.48907
     else:
         print('Unknown test function.')
         exit(1)

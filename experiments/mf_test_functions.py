@@ -1,7 +1,25 @@
 import numpy as np
 import math
 
-def mfRosenbrock(x, f):
+def mfUnivariate(args, f):
+    x, = args
+    numFidelities = 2
+    assert 0 <= f < numFidelities
+
+    def univariate(x):
+        '''
+        0 <= x <= 1.2
+        Global maximum: f(0.96609) = 1.48907
+        '''
+        return (1.4 - 3. * x) * math.sin(18. * x)
+
+    def error(x, f):
+        return (numFidelities - 1 - f) * .3 * math.sin(31. * x - 1)
+
+    return univariate(x) + error(x, f), 10 ** (f - numFidelities + 1)
+
+def mfRosenbrock(args, f):
+    x = np.array(args)
     numFidelities = 3
     assert(0 <= f and f < numFidelities)
 
@@ -24,10 +42,10 @@ def mfRosenbrock(x, f):
         return epsilon * (numFidelities - 1 - f) * r
 
     cost = 10. ** (f - numFidelities + 1)
-    x = np.array(x)
     return rosenbrock(x) + error(x, f), cost
 
-def mfHosaki(x, f):
+def mfHosaki(args, f):
+    x = np.array(args)
     numFidelities = 3
     assert(0 <= f and f < numFidelities)
 
@@ -52,7 +70,6 @@ def mfHosaki(x, f):
         return epsilon * r
 
     cost = 10. ** (f - numFidelities + 1)
-    x = np.array(x)
     return hosaki(x) + error(x, f), cost
 
 def mfHartmann3(x, f):

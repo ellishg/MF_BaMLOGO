@@ -59,7 +59,7 @@ class MFBaMLOGO:
 
             if self.bestNode:
                 cost = self.totalCost
-                x = tuple(self.bestNode.center)
+                x = self.transformToDomain(self.bestNode.center)
                 y = self.bestNode.value
                 costs.append(cost)
                 queryPoints.append(x)
@@ -96,7 +96,8 @@ class MFBaMLOGO:
         x = node.center
         if node.value is not None and not node.isFakeValue:
             if node.fidelity == self.maxFidelity:
-                logging.debug('Already had node at x={0}'.format(tuple(x)))
+                logging.debug('Already had node at x={0}'
+                                .format(self.transformToDomain(x)))
                 return
         lcb, ucb = self.computeLCBUCB(x)
 
@@ -107,12 +108,12 @@ class MFBaMLOGO:
 
         elif self.algorithm == 'MF-BaMLOGO' and 2. * self.error(0) < ucb - lcb:
             logging.debug('Unfavorable region at x={0}; '
-                          'Using lowest fidelity'.format(tuple(x)))
+                      'Using lowest fidelity'.format(self.transformToDomain(x)))
             self.evaluateNode(node, fidelity=0, offset=-self.error(0))
 
         else:
             logging.debug('Unfavorable region at x={0}. '
-                          'Using LCB = {1}'.format(tuple(x), lcb))
+                      'Using LCB = {1}'.format(self.transformToDomain(x), lcb))
             node.setFakeValue(lcb)
 
     def evaluateNode(self, node, fidelity,
@@ -120,7 +121,8 @@ class MFBaMLOGO:
         x = node.center
         if node.value is not None and not node.isFakeValue:
             if fidelity <= node.fidelity:
-                logging.debug('Already had node at x={0}'.format(tuple(x)))
+                logging.debug('Already had node at x={0}'
+                                .format(self.transformToDomain(x)))
                 return
 
         y = self.evaluate(x, fidelity)
@@ -159,7 +161,7 @@ class MFBaMLOGO:
 
 
     def evaluate(self, x, f):
-        args = tuple(x * (self.highs - self.lows) + self.lows)
+        args = self.transformToDomain(x)
         logging.debug('Evaluating f{0} at fidelity {1}'.format(args, f))
         y, cost = self.fn(args, f)
         logging.debug('Got y = {0} with cost {1}'.format(y, cost))
@@ -214,7 +216,8 @@ class MFBaMLOGO:
             lcb, ucb = (mean - beta * std - self.error(f),
                         mean + beta * std + self.error(f))
 
-            logging.debug('LCB/UCB for f{0} (fidelity {1})'.format(tuple(x), f))
+            logging.debug('LCB/UCB for f{0} (fidelity {1})'
+                            .format(self.transformToDomain(x), f))
             logging.debug('Mean={0}, std={1}, beta={2}'.format(mean, std, beta))
             logging.debug('LCB={0}, UCB={1}'.format(lcb, ucb))
 
@@ -231,5 +234,8 @@ class MFBaMLOGO:
         logging.debug('Width is now {0}'.format(
                             self.wSchedule[self.wIndex]))
 
+    def transformToDomain(self, x):
+        return tuple(x * (self.highs - self.lows) + self.lows)
+
     def bestQuery(self):
-        return tuple(self.bestNode.center), self.bestNode.value
+        return self.transformToDomain(self.bestNode.center), self.bestNode.value
