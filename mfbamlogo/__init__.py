@@ -50,7 +50,7 @@ class MFBaMLOGO:
         self.space = PartitionTree(self.dim)
         self.observeNode(self.space.nodes[0])
 
-    def maximize(self, budget=100., ret_data=False, plot=True):
+    def maximize(self, budget=100., ret_data=False, plot=False):
         costs, bestValues, queryPoints = [], [], []
         while self.totalCost < budget:
             self.stepBestValue = -float('inf')
