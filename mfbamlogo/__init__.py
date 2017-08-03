@@ -50,7 +50,7 @@ class MFBaMLOGO:
         self.space = PartitionTree(self.dim)
         self.observeNode(self.space.nodes[0])
 
-    def maximize(self, budget=100., ret_data=False):
+    def maximize(self, budget=100., ret_data=False, plot=True):
         costs, bestValues, queryPoints = [], [], []
         while self.totalCost < budget:
             self.stepBestValue = -float('inf')
@@ -65,6 +65,8 @@ class MFBaMLOGO:
                 queryPoints.append(x)
                 bestValues.append(y)
                 logging.info('Best value is {0} with cost {1}'.format(y, cost))
+            if plot and self.dim == 1:
+                self.plotInfo()
 
         if ret_data:
             return costs, bestValues, queryPoints
@@ -238,3 +240,13 @@ class MFBaMLOGO:
 
     def bestQuery(self):
         return self.transformToDomain(self.bestNode.center), self.bestNode.value
+
+    def plotInfo(self):
+        import matplotlib.pyplot as plt
+        fig, axes = plt.subplots(nrows=2)
+        def f(arg):
+            x = self.transformToDomain(arg)
+            return self.fn(x, self.numFidelities - 1)[0]
+        self.model.plotModel(axes[0], f)
+        self.space.plotTree(axes[1])
+        plt.show()

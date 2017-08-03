@@ -25,6 +25,15 @@ class PartitionTree:
         newNodes = node.split()
         self.nodes.extend(newNodes)
 
+    def plotTree(self, ax):
+        ax.set_title('Partition Tree')
+        xs = [n.center for n in self.nodes]
+        depths = [n.depth for n in self.nodes]
+        ax.scatter(xs, depths, label='Nodes')
+        ax.set_ylabel('Depth')
+        ax.legend()
+        ax.set_xlim([0., 1.])
+
 class Node:
     def __init__(self, lows, highs, depth):
         self.lows = np.array(lows)

@@ -5,10 +5,11 @@ import logging
 
 class GaussianProcess:
     def __init__(self, numFidelities, dim):
+        self.dim = dim
         # Use an anisotropic kernel
         # (independent length scales for each dimension)
-        sqrdExp = ConstantKernel() ** 2. * RBF(length_scale=dim*[1.])
-        numHyperParams = dim + 1
+        sqrdExp = ConstantKernel() ** 2. * RBF(length_scale=self.dim*[1.])
+        numHyperParams = self.dim + 1
         self.models, self.isFit, self.xValues, self.yValues = [], [], [], []
         for _ in range(numFidelities):
             self.models.append(GaussianProcessRegressor(
@@ -35,6 +36,22 @@ class GaussianProcess:
 
     def getPrediction(self, x, fidelity):
         self.fitModel(fidelity)
-        mean, std = self.models[fidelity].predict(x.reshape(1, -1),
+        mean, std = self.models[fidelity].predict(x.reshape(-1, self.dim),
                                                   return_std=True)
-        return mean[0][0], std[0]
+        return np.array(mean)[:, 0], std
+
+    def plotModel(self, ax, fn):
+        assert self.dim == 1
+        if not self.isValid(-1):
+            return
+        import matplotlib.pyplot as plt
+        xs = np.linspace(0., 1., 500)
+        means, vs = self.getPrediction(xs, -1)
+        cs = 1.96 * np.sqrt(vs)
+        ax.set_title('Gaussian Process')
+        ax.scatter(self.xValues[-1], self.yValues[-1], label='Data')
+        ax.plot(xs, means, label='Gaussian Process')
+        ax.fill_between(xs, means - cs, means + cs, alpha=.5, color='gray')
+        ax.plot(xs, [fn(x) for x in xs], '--', label='f(x)')
+        ax.legend()
+        ax.set_xlim([0., 1.])
