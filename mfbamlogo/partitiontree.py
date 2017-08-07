@@ -25,11 +25,17 @@ class PartitionTree:
         newNodes = node.split()
         self.nodes.extend(newNodes)
 
-    def plotTree(self, ax):
+    def plotTree(self, ax, numFidelities):
         ax.set_title('Partition Tree')
-        xs = [n.center for n in self.nodes]
-        depths = [n.depth for n in self.nodes]
-        ax.scatter(xs, depths, label='Nodes')
+        fake = list(filter(lambda n: n.isFakeValue, self.nodes))
+        fidel = [list(filter(lambda n: n.fidelity == i, self.nodes)) for i in range(numFidelities)]
+        xs = [n.center for n in fake]
+        depths = [n.depth for n in fake]
+        ax.scatter(xs, depths, label='Fake Nodes')
+        for i in range(numFidelities):
+            xs = [n.center for n in fidel[i]]
+            depths = [n.depth for n in fidel[i]]
+            ax.scatter(xs, depths, label='Fidelty {0}'.format(i))
         ax.set_ylabel('Depth')
         ax.legend()
         ax.set_xlim([0., 1.])

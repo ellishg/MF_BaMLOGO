@@ -50,7 +50,7 @@ class MFBaMLOGO:
         self.space = PartitionTree(self.dim)
         self.observeNode(self.space.nodes[0])
 
-    def maximize(self, budget=100., ret_data=False, plot=False):
+    def maximize(self, budget=100., ret_data=False, plot=True):
         costs, bestValues, queryPoints = [], [], []
         while self.totalCost < budget:
             self.stepBestValue = -float('inf')
@@ -215,8 +215,8 @@ class MFBaMLOGO:
                 return None, None
 
             f, (mean, std) = min(enumerate(predictions), key=uncertainty)
-            lcb, ucb = (mean - beta * std - self.error(f),
-                        mean + beta * std + self.error(f))
+            lcb = float(mean - beta * std - self.error(f))
+            ucb = float(mean + beta * std + self.error(f))
 
             logging.debug('LCB/UCB for f{0} (fidelity {1})'
                             .format(self.transformToDomain(x), f))
@@ -247,6 +247,6 @@ class MFBaMLOGO:
         def f(arg):
             x = self.transformToDomain(arg)
             return self.fn(x, self.numFidelities - 1)[0]
-        self.model.plotModel(axes[0], f)
-        self.space.plotTree(axes[1])
+        self.model.plotModel(axes[0], f, self.computeLCBUCB)
+        self.space.plotTree(axes[1], self.numFidelities)
         plt.show()

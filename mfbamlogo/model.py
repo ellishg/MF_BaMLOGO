@@ -40,7 +40,7 @@ class GaussianProcess:
                                                   return_std=True)
         return np.array(mean)[:, 0], std
 
-    def plotModel(self, ax, fn):
+    def plotModel(self, ax, fn, ci):
         assert self.dim == 1
         if not self.isValid(-1):
             return
@@ -48,10 +48,13 @@ class GaussianProcess:
         xs = np.linspace(0., 1., 500)
         means, vs = self.getPrediction(xs, -1)
         cs = 1.96 * np.sqrt(vs)
+        lcb, ucb = np.array([ci(x) for x in xs]).T
         ax.set_title('Gaussian Process')
         ax.scatter(self.xValues[-1], self.yValues[-1], label='Data')
         ax.plot(xs, means, label='Gaussian Process')
         ax.fill_between(xs, means - cs, means + cs, alpha=.5, color='gray')
         ax.plot(xs, [fn(x) for x in xs], '--', label='f(x)')
+        ax.plot(xs, lcb, '--', label='LCB')
+        ax.plot(xs, ucb, '--', label='UCB')
         ax.legend()
         ax.set_xlim([0., 1.])
