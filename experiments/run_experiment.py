@@ -142,6 +142,15 @@ def main(argv):
         lows = [0.]
         highs = [1.2]
         trueOptima = 1.48907
+    elif testFunction == 'Shekel-4D':
+        from mf_test_functions import mfShekel
+        dim = 4
+        numFidelities = 3
+        fn = mfShekel
+        costEstimations = [0.25, 0.5, 1.]
+        lows = dim * [0.]
+        highs = dim * [10.]
+        trueOptima = mfShekel([4, 4, 4, 4], numFidelities - 1)[0]
     else:
         print('Unknown test function.')
         exit(1)

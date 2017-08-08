@@ -1,6 +1,44 @@
 import numpy as np
 import math
 
+def mfShekel(args, fidelity):
+    x = np.array(args)
+    numFidelities = 3
+    assert 0 <= fidelity < numFidelities
+    # Defines the locations of the local extrema.
+    # A.shape = (m, dim) for m local extrema.
+    a = np.array([[4., 4., 4., 4.],
+                [1., 1., 1., 1.],
+                [8., 8., 8., 8.],
+                [6., 6., 6., 6.],
+                [3., 7., 3., 7.],
+                [2., 9., 2., 9.],
+                [5., 5., 3., 3.]])
+    deltaA = np.array([[1., -1., 1., 1.],
+                    [-1., 1., 1., 1.],
+                    [1., 1., -1., -1.],
+                    [1., 1., 1., 1.],
+                    [1., -1., 1., -1.],
+                    [-1., -1., 1., 1.],
+                    [-1., -1., -1., -1.]])
+    # Defines the magnitude of the local extrema.
+    c = np.array([.1, .2, .2, .4, .4, .6, .3])
+    deltaC = np.array([.05, -.05, .1, .05, -.05, -.1, .05])
+    assert a.shape[1] == x.shape[0]
+
+    def shekel(x, a, c):
+        '''
+        Shekel function
+        (Continuous, Differentiable, Non-Separable, Scalable, Multimodal)
+        0 <= x <= 10
+        Global maximum: f(4, 4, 4, 4) = 10.402818836930305
+        '''
+        return np.sum(1. / (np.sum((x - a) ** 2., axis=1) + c))
+
+    epsilon = 0.1 * (numFidelities - 1 - fidelity)
+    cost = 2. ** (fidelity - numFidelities + 1)
+    return shekel(x, a + epsilon * deltaA, c + epsilon * deltaC), cost
+
 def mfUnivariate(args, f):
     x, = args
     numFidelities = 2
