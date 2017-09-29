@@ -15,7 +15,8 @@ def main(dataDir='../data/'):
                         results[fn] = fnResults
                     else:
                         results[fn].update(fnResults)
-    plot(results, skipAlgs=['RAND', 'GP_UCB', 'LOGO'])
+    # plot(results, skipAlgs=['RAND', 'GP_UCB', 'LOGO'])
+    plot(results)
 
 '''
 runs.append({'Costs': costs,
@@ -29,8 +30,10 @@ runs.append({'Costs': costs,
 '''
 def plot(results, skipAlgs=[]):
     import matplotlib.pyplot as plt
+    from matplotlib import rcParams
     import numpy as np
     import math
+    rcParams.update({'font.size': 18})
     binSize = 5
     for i, (fn, fnResults) in enumerate(results.items()):
         plt.figure(i)
