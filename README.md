@@ -1,5 +1,6 @@
 # MF_BaMLOGO
-A mulit-fidelity global optimizer that combines bayesian optimization with LOGO
+ellishoag.me/MF_Hybrid.pdf
+A multi-fidelity global optimizer that combines bayesian optimization with LOGO
 
 To install:
 
