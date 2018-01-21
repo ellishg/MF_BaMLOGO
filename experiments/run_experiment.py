@@ -7,6 +7,7 @@ def main(argv):
                                ' -a <algorithm>'
                                ' -r <budget>'
                                ' -n <num_runs>'
+                               ' -s <num_initial_samples>'
                                ' -o <output>'
                                ' -v <verbose_level>')
     testFunction = 'Hartmann-3D'
@@ -16,7 +17,7 @@ def main(argv):
     numRuns = 1
     import getopt
     try:
-        opts, args = getopt.getopt(argv[1:], 'hf:a:r:n:o:v:')
+        opts, args = getopt.getopt(argv[1:], 'hf:a:r:n:s:o:v:')
     except getopt.GetoptError:
         print(optionExample)
         exit(1)
@@ -40,6 +41,8 @@ def main(argv):
             budget = float(arg)
         elif opt == '-n':
             numRuns = int(arg)
+        elif opt == '-s':
+            numInitSamples = int(arg)
         elif opt == '-o':
             outputDir = arg
 
@@ -156,7 +159,8 @@ def main(argv):
         exit(1)
 
     results = runAlgorithm(testFunction, fn, costEstimations, lows, highs,
-                           trueOptima, budget, algorithm, numRuns)
+                           trueOptima, budget, numInitSamples,
+                           algorithm, numRuns)
 
     if outputDir:
         with open(outputDir, 'w') as outFile:
@@ -170,13 +174,13 @@ def main(argv):
 
 def runAlgorithm(functionName, fn,
                  costEstimations, lows, highs,
-                 trueOptima, budget, algorithm, numRuns):
+                 trueOptima, budget, numInitSamples, algorithm, numRuns):
     from mfbamlogo import MFBaMLOGO
 
     runs = []
     for _ in range(numRuns):
         alg = MFBaMLOGO(fn, costEstimations, lows, highs,
-                         initNumber=10, algorithm=algorithm)
+                         numInitSamples=numInitSamples, algorithm=algorithm)
         costs, values, queryPoints = alg.maximize(budget=budget,
                                                   ret_data=True)
         runs.append({'Costs': costs,

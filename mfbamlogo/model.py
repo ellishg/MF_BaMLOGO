@@ -47,14 +47,15 @@ class GaussianProcess:
         import matplotlib.pyplot as plt
         xs = np.linspace(0., 1., 500)
         means, vs = self.getPrediction(xs, -1)
-        cs = 1.96 * np.sqrt(vs)
+        cs = 1.96 * np.sqrt(vs) # 95% confidence
         lcb, ucb = np.array([ci(x) for x in xs]).T
         ax.set_title('Gaussian Process')
-        ax.scatter(self.xValues[-1], self.yValues[-1], label='Data')
-        ax.plot(xs, means, label='Gaussian Process')
+        # ax.plot(xs, means, label='Gaussian Process')
         ax.fill_between(xs, means - cs, means + cs, alpha=.5, color='gray')
-        ax.plot(xs, [fn(x) for x in xs], '--', label='f(x)')
-        ax.plot(xs, lcb, '--', label='LCB')
-        ax.plot(xs, ucb, '--', label='UCB')
+        ax.plot(xs, [fn(x) for x in xs], label='f(x)', color='#D95F02')
+        ax.plot(xs, lcb, '--', label='LCB', color='#7570B3')
+        ax.plot(xs, ucb, '--', label='UCB', color='#1B9E77')
+        ax.scatter(self.xValues[-1], self.yValues[-1], label='Samples',
+                                                       color='blue')
         ax.legend()
         ax.set_xlim([0., 1.])

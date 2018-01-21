@@ -28,14 +28,16 @@ class PartitionTree:
     def plotTree(self, ax, numFidelities):
         ax.set_title('Partition Tree')
         fake = list(filter(lambda n: n.isFakeValue, self.nodes))
-        fidel = [list(filter(lambda n: n.fidelity == i, self.nodes)) for i in range(numFidelities)]
+        fidel = [list(filter(lambda n: n.fidelity == i, self.nodes))
+                        for i in range(numFidelities)]
         xs = [n.center for n in fake]
         depths = [n.depth for n in fake]
-        ax.scatter(xs, depths, label='Fake Nodes')
+        ax.scatter(xs, depths, label='Fake Nodes', color='#1B9E77')
         for i in range(numFidelities):
             xs = [n.center for n in fidel[i]]
             depths = [n.depth for n in fidel[i]]
-            ax.scatter(xs, depths, label='Fidelty {0}'.format(i))
+            ax.scatter(xs, depths, label=['Low', 'High'][i] + ' Fidelity',
+                                   color=['#7570B3', 'blue'][i])
         ax.set_ylabel('Depth')
         ax.legend()
         ax.set_xlim([0., 1.])

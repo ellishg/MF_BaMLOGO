@@ -5,7 +5,7 @@ import logging
 class MFBaMLOGO:
 
     def __init__(self, fn, costEstimations, lows, highs,
-                        initNumber=10, algorithm='MF-BaMLOGO'):
+                        numInitSamples=10, algorithm='MF-BaMLOGO'):
         assert algorithm in ['MF-BaMLOGO', 'BaMLOGO', 'LOGO']
         assert len(lows) == len(highs)
         self.algorithm = algorithm
@@ -29,7 +29,7 @@ class MFBaMLOGO:
         self.epsilon = 0
         if self.algorithm == 'MF-BaMLOGO':
             samples = []
-            for i in range(initNumber):
+            for i in range(numInitSamples):
                 x = np.random.uniform([0.] * self.dim, [1.] * self.dim)
                 y = self.evaluate(x, 0)
                 samples.append(y)
