@@ -15,6 +15,7 @@ def main(argv):
     budget = 50
     outputDir = None
     numRuns = 1
+    numInitSamples = 10
     import getopt
     try:
         opts, args = getopt.getopt(argv[1:], 'hf:a:r:n:s:o:v:')
